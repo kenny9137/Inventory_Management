@@ -141,36 +141,49 @@ def delete_product(cur, connection):
 
     cur.execute("DELETE FROM products WHERE id = ?", (product_id,))
     connection.commit()
-    print("✅ Product deleted successfully!")
+
+    # Reset Auto-Increment for product IDs
+    cur.execute("DELETE FROM sqlite_sequence WHERE name='products'")
+    connection.commit()
+
+    print("✅ Product deleted successfully, and ID sequence reset!")
 
 
 def record_transaction(cur, connection, transaction_type):
     print(f"\n--- Record {transaction_type.capitalize()} ---")
-    product_id = input("Enter Product ID: ")
-    quantity = int(input("Enter Quantity: "))
+    try:
+        product_id = int(input("Enter Product ID: "))
+        quantity = int(input("Enter Quantity: "))
 
-    cur.execute("SELECT price, stock FROM products WHERE id = ?", (product_id,))
-    product = cur.fetchone()
+        # Fetch product details (price & stock)
+        cur.execute("SELECT price, stock FROM products WHERE id = ?", (product_id,))
+        product = cur.fetchone()
 
-    if not product:
-        print("❌ Invalid Product ID!")
-        return
+        if not product:
+            print("❌ Invalid Product ID!")
+            return
 
-    price, stock = product[2], product[3]
-    total_price = price * quantity
+        price, stock = product  # Correct indexing
+        total_price = price * quantity
 
-    if transaction_type == "sale" and stock < quantity:
-        print("❌ Not enough stock available!")
-        return
+        # Check stock availability for sales
+        if transaction_type == "sale" and stock < quantity:
+            print("❌ Not enough stock available!")
+            return
 
-    cur.execute("INSERT INTO transactions (product_id, type, quantity, total_price) VALUES (?, ?, ?, ?)",
-                (product_id, transaction_type, quantity, total_price))
+        # Insert transaction
+        cur.execute("INSERT INTO transactions (product_id, type, quantity, total_price) VALUES (?, ?, ?, ?)",
+                    (product_id, transaction_type, quantity, total_price))
 
-    new_stock = stock - quantity if transaction_type == "sale" else stock + quantity
-    cur.execute("UPDATE products SET stock = ? WHERE id = ?", (new_stock, product_id))
+        # Update stock
+        new_stock = stock - quantity if transaction_type == "sale" else stock + quantity
+        cur.execute("UPDATE products SET stock = ? WHERE id = ?", (new_stock, product_id))
 
-    connection.commit()
-    print(f"✅ {transaction_type.capitalize()} recorded successfully!")
+        connection.commit()
+        print(f"✅ {transaction_type.capitalize()} recorded successfully!")
+
+    except ValueError:
+        print("❌ Invalid input! Please enter a number.")
 
 
 def generate_report(cur):
