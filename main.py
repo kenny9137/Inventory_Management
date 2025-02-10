@@ -213,8 +213,12 @@ def main():
             break
 
     while role:
-        print("\n1. Add Product\n2. View Inventory\n3. Update Product\n4. Delete Product")
-        print("5. Record Sale\n6. Record Purchase\n7. Generate Report\n8. Logout")
+        if role == "admin":
+            print("\n1. Add Product\n2. View Inventory\n3. Update Product\n4. Delete Product")
+            print("5. Record Sale\n6. Record Purchase\n7. Generate Report\n8. Logout")
+        else:
+            print("\n1. Add Product\n2. View Inventory\n3. Update Product\n4. Delete Product\n8. Logout")
+
 
         choice = input("Choose an option: ")
 
