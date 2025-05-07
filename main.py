@@ -5,7 +5,7 @@ from datetime import datetime
 def create_connection():
     connection = sqlite3.connect("inventory.db")
     return connection, connection.cursor()
-
+#new addiion just checking
 
 def create_tables(cur):
     cur.execute("""
